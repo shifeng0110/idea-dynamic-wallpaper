@@ -1,0 +1,5 @@
+<idea-plugin>
+    <!-- 可选依赖 com.intellij.jcef 的挂钩配置（主 plugin.xml optional depends 引用）。
+         本插件对 JCEF 的全部使用走反射 + JcefGate 运行时门控，无需在此注册任何扩展；
+         此文件仅为满足 optional depends 的配置文件存在性要求。 -->
+</idea-plugin>

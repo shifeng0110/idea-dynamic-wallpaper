@@ -1,0 +1,15 @@
+build/
+.gradle/
+.gradle-home/
+.cache-runtime/
+.intellijPlatform/
+.idea/
+*.iml
+out/
+local.properties
+*.log
+*.zip
+*.hprof
+
+# 内部构建笔记（含本机路径，不进公开仓库）
+docs/internal-build-notes.md

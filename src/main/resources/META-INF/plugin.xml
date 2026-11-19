@@ -1,0 +1,75 @@
+<idea-plugin>
+    <!-- 插件 id：反向域名。**发布后不可更改**。
+         GitHub 发布建议：com.github.<你的GitHub用户名>.dwallpaper -->
+    <id>com.github.shifeng0110.dwallpaper</id>
+    <name>Dynamic Wallpaper</name>
+    <vendor email="shifeng0110@users.noreply.github.com" url="https://github.com/shifeng0110/idea-dynamic-wallpaper">shifeng0110</vendor>
+
+    <description><![CDATA[
+<h2>Dynamic Wallpaper for IntelliJ IDEA</h2>
+<p>Play <b>Wallpaper Engine</b>-style animated wallpapers behind your IDE: video, GIF, image sequences
+and web wallpapers, with a layered transparent overlay window that composites at the OS level so the
+IDE itself is never repainted (no editor lag).</p>
+
+<h3>Features</h3>
+<ul>
+  <li>Full-window animated wallpaper (file tree, editor, status bar)</li>
+  <li>Auto-discovers your local Wallpaper Engine workshop library (custom path supported)</li>
+  <li>Adjustable <b>opacity</b>, <b>brightness</b> and <b>frame rate</b> (5-60 fps)</li>
+  <li>Click-through overlay: all mouse and keyboard input still reaches the IDE</li>
+  <li>Right-side settings tool window; per-project or global</li>
+  <li>Pauses or drops to low fps when the window is hidden / you are typing</li>
+</ul>
+
+<h3>Requirements</h3>
+<ul>
+  <li>IntelliJ IDEA 2026.2 (build 262) or newer</li>
+  <li>For video wallpapers: <code>ffmpeg</code> available on <code>PATH</code> or in a standard install
+      location (Windows). It is <b>not</b> bundled with this plugin. Without ffmpeg the plugin falls
+      back to a pure-Java decoder (lower frame rate).</li>
+  <li>Windows recommended: the overlay uses a per-pixel translucent top-level window and native
+      window styles (<code>WS_EX_LAYERED | WS_EX_TRANSPARENT</code>) for click-through.</li>
+</ul>
+
+<h3>Privacy</h3>
+<p>This plugin works entirely offline. It reads only local media files from the wallpaper directory you
+configure, stores its settings in the IDE configuration, and never sends data anywhere.</p>
+
+<h3>Third-party</h3>
+<p>Bundles <a href="https://github.com/jcodec/jcodec">JCodec</a> (BSD-2-Clause) as a pure-Java
+fallback decoder. ffmpeg is invoked as an external process if present and is not redistributed.</p>
+]]></description>
+
+    <change-notes><![CDATA[
+<h3>1.0.0</h3>
+<ul>
+  <li>First public release.</li>
+  <li>Video wallpapers decoded by the system <code>ffmpeg</code> over a loopback socket (no per-frame
+      decoding in Java), with automatic fallback to a pure-Java decoder.</li>
+  <li>Wallpaper is rendered in a separate per-pixel translucent window: IDEA is not repainted, so the
+      editor stays responsive.</li>
+  <li>Fixed-cadence display clock removes stutter from uneven frame arrival.</li>
+  <li>Opacity / brightness / fps sliders in a right-side tool window.</li>
+</ul>
+]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- JCEF 为可选依赖：无 JCEF 的发行版仍可安装，运行时由 JcefGate 门控 -->
+    <depends optional="true" config-file="plugin-jcef.xml">com.intellij.modules.jcef</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="dwallpaper" displayType="BALLOON"/>
+
+        <toolWindow id="Dynamic Wallpaper" anchor="right" canCloseContents="false"
+                    factoryClass="com.dwallpaper.settings.WallpaperToolWindowFactory"
+                    icon="/icons/wallpaper.svg"/>
+
+        <applicationService serviceImplementation="com.dwallpaper.settings.SettingsState"/>
+        <applicationService serviceImplementation="com.dwallpaper.welibrary.LibraryIndex"/>
+        <applicationService serviceImplementation="com.dwallpaper.core.WallpaperEngine"/>
+        <applicationService serviceImplementation="com.dwallpaper.settings.WallpaperController"/>
+
+        <applicationInitializedListener implementation="com.dwallpaper.core.WallpaperBootstrap"/>
+    </extensions>
+</idea-plugin>
