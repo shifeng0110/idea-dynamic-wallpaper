@@ -176,10 +176,26 @@ if (-not (Ask "确认推送到 $target ($currentBranch)？")) {
     Fail "已取消（未推送）。本地提交已保留，之后可直接 git push。"
 }
 Write-Host "  （若弹出浏览器登录 GitHub，请完成授权）" -ForegroundColor DarkGray
-& git push -u origin $currentBranch
-if ($LASTEXITCODE -ne 0) {
-    Fail "推送失败。常见原因：①远端仓库还没创建 ②未登录 GitHub ③远端已有不同历史（需 git pull --rebase）。"
-}
+        $pushOut = (& git push -u origin $currentBranch 2>&1 | Out-String)
+        Write-Host $pushOut
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host ""
+            if ($pushOut -match 'Repository not found|not found') {
+                Write-Host "  诊断：GitHub 上找不到该仓库（或无权访问）" -ForegroundColor Yellow
+                Write-Host "    ① 仓库还没创建 → 先去 https://github.com/new 新建，名字要与地址末段一致" -ForegroundColor Yellow
+                Write-Host "    ② 用户名不对 → 到 https://github.com/settings/profile 核对你的 login，" -ForegroundColor Yellow
+                Write-Host "       然后 .\push.cmd -RemoteUrl https://github.com/<正确用户名>/<仓库名>.git" -ForegroundColor Yellow
+                Write-Host "    ③ 仓库是私有 → 需先用 Git Credential Manager 登录 GitHub" -ForegroundColor Yellow
+            } elseif ($pushOut -match 'Authentication failed|could not read Username|403') {
+                Write-Host "  诊断：GitHub 认证未完成，运行一次交互式推送触发浏览器登录：" -ForegroundColor Yellow
+                Write-Host "    git push -u origin $currentBranch" -ForegroundColor Yellow
+            } elseif ($pushOut -match 'rejected|non-fast-forward|fetch first') {
+                Write-Host "  诊断：远端已有不同历史，先 git fetch origin 再 rebase" -ForegroundColor Yellow
+            } else {
+                Write-Host "  诊断：见上方 git 原始输出" -ForegroundColor Yellow
+            }
+            Fail "推送失败（本地提交已保留，修好后重跑本脚本即可）"
+        }
 
 Write-Host ""
 Write-Host "  ✔ 推送完成" -ForegroundColor Green
